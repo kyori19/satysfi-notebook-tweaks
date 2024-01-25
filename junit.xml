@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="1" failures="0" errors="0" time="2.43">
+  <testsuite name="satysfi-notebook-tweaks" errors="0" failures="0" skipped="0" timestamp="2024-01-25T22:14:48" time="2.065" tests="1">
+    <testcase classname="satysfi-notebook-tweaks should be tested" name="satysfi-notebook-tweaks should be tested" time="0.002">
+    </testcase>
+  </testsuite>
+</testsuites>
