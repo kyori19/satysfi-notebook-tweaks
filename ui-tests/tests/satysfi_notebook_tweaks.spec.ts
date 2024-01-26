@@ -14,6 +14,8 @@ test.describe('PDF Export command', () => {
     await page.getByText('Activate Command Palette').click();
     await page.getByPlaceholder('SEARCH', { exact: true }).fill('satysfi');
 
-    await expect(page.getByText('No commands found')).toContainText('No commands found that match \'satysfi\'');
+    await expect(page.getByText('No commands found')).toContainText(
+      "No commands found that match 'satysfi'"
+    );
   });
 });
