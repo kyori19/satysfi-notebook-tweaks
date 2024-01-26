@@ -6,18 +6,16 @@ import { expect, test } from '@jupyterlab/galata';
  */
 test.use({ autoGoto: false });
 
-test('should emit an activation console message', async ({ page }) => {
-  const logs: string[] = [];
+test.describe('PDF Export command', () => {
+  test('should not appear on palette at Launcher', async ({ page }) => {
+    await page.goto();
 
-  page.on('console', message => {
-    logs.push(message.text());
+    await page.getByText('View', { exact: true }).click();
+    await page.getByText('Activate Command Palette').click();
+    await page.getByPlaceholder('SEARCH', { exact: true }).fill('satysfi');
+
+    await expect(page.getByText('No commands found')).toContainText(
+      "No commands found that match 'satysfi'"
+    );
   });
-
-  await page.goto();
-
-  expect(
-    logs.filter(
-      s => s === 'JupyterLab extension satysfi-notebook-tweaks is activated!'
-    )
-  ).toHaveLength(1);
 });
