@@ -27,7 +27,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         const widget = app.shell.currentWidget;
         return (
           widget instanceof NotebookPanel &&
-          widget.sessionContext.kernelPreference.language === 'satysfi'
+          widget.sessionContext.kernelPreference.language.toLowerCase() === 'satysfi'
         );
       },
       execute: async () => {
