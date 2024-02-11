@@ -4,7 +4,10 @@ import { NotebookPanel } from '@jupyterlab/notebook';
 import { IRenderMimeRegistry, MimeModel } from '@jupyterlab/rendermime';
 import { KernelMessage } from '@jupyterlab/services';
 
-export const export_pdf = async (app : JupyterFrontEnd, rendermime : IRenderMimeRegistry) => {
+export const exportPDF = async (
+  app: JupyterFrontEnd,
+  rendermime: IRenderMimeRegistry
+) => {
   const nb = app.shell.currentWidget;
   if (!(nb instanceof NotebookPanel) || !nb.model) {
     return;
@@ -18,8 +21,8 @@ export const export_pdf = async (app : JupyterFrontEnd, rendermime : IRenderMime
     ({ cell_type }) => cell_type === 'code'
   );
   const mods = cells
-    .filter(({ source }) => source.startsWith('%!'))
-    .map(({ source }) => source.slice(2));
+    .map(({ source }) => source)
+    .filter(source => source.startsWith('%!'));
   const document = cells
     .filter(
       ({ source }) =>
@@ -30,7 +33,7 @@ export const export_pdf = async (app : JupyterFrontEnd, rendermime : IRenderMime
     .map(({ source }) => source)
     .join('\n');
 
-  const renderingKernel = await app.serviceManager.kernels.startNew(
+  const startKernel = app.serviceManager.kernels.startNew(
     {
       name: workingKernel.name
     },
@@ -40,8 +43,28 @@ export const export_pdf = async (app : JupyterFrontEnd, rendermime : IRenderMime
       handleComms: workingKernel.handleComms
     }
   );
-  renderingKernel.requestExecute({ code: '%% render-in-pdf' });
-  mods.forEach(mod => renderingKernel.requestExecute({ code: mod }));
+  const renderingKernel = await ['%% render-in-pdf', ...mods].reduce(
+    async (acc, code) =>
+      acc.then(
+        renderingKernel =>
+          new Promise((resolve, reject) => {
+            const future = renderingKernel.requestExecute({ code });
+            future.onIOPub = msg => {
+              if (
+                KernelMessage.isStatusMsg(msg) &&
+                msg.content.execution_state === 'idle'
+              ) {
+                resolve(renderingKernel);
+              }
+
+              if (KernelMessage.isErrorMsg(msg)) {
+                reject(new Error(msg.content.evalue));
+              }
+            };
+          })
+      ),
+    startKernel
+  );
   const future = renderingKernel.requestExecute({ code: document });
   future.onIOPub = msg => {
     if (!KernelMessage.isExecuteResultMsg(msg)) {

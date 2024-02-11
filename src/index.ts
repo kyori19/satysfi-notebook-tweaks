@@ -6,7 +6,7 @@ import { ICommandPalette } from '@jupyterlab/apputils';
 import { NotebookPanel } from '@jupyterlab/notebook';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import { CMD_EXPORT_PDF } from './consts';
-import { export_pdf } from './export-pdf';
+import { exportPDF } from './export-pdf';
 
 /**
  * Initialization data for the satysfi-notebook-tweaks extension.
@@ -31,7 +31,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
             'satysfi'
         );
       },
-      execute: () => export_pdf(app, rendermime),
+      execute: () => exportPDF(app, rendermime)
     });
 
     palette.addItem({
