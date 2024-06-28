@@ -3,6 +3,7 @@ import { MainAreaWidget } from '@jupyterlab/apputils';
 import { NotebookPanel } from '@jupyterlab/notebook';
 import { IRenderMimeRegistry, MimeModel } from '@jupyterlab/rendermime';
 import { KernelMessage } from '@jupyterlab/services';
+import { v4 as uuid } from 'uuid';
 
 export const exportPDF = async (
   app: JupyterFrontEnd,
@@ -17,21 +18,31 @@ export const exportPDF = async (
     return;
   }
 
-  const cells = nb.model.sharedModel.cells.filter(
-    ({ cell_type }) => cell_type === 'code'
-  );
-  const mods = cells
+  const [codes, vars] = nb.model.sharedModel.cells
+    .filter(({ cell_type }) => cell_type === 'code')
     .map(({ source }) => source)
-    .filter(source => source.startsWith('%!'));
-  const document = cells
-    .filter(
-      ({ source }) =>
-        !source.startsWith('%!') &&
-        !source.startsWith('%?') &&
-        !source.startsWith('%%')
-    )
-    .map(({ source }) => source)
-    .join('\n');
+    .filter(source => !source.startsWith('%?') && !source.startsWith('%%'))
+    .map(source => {
+      if (source.startsWith('%!')) {
+        return [source, null] as [string, null];
+      }
+
+      const v = `notebook-export-${uuid()}`;
+      const def = `%! val ${v} = '< ${source} >`;
+      return [def, v];
+    })
+    .reduce<[string[], (string | null)[]]>(
+      ([a1, a2], [c1, c2]) => [
+        [...a1, c1],
+        [...a2, c2]
+      ],
+      [[], []]
+    );
+
+  const document = vars
+    .filter(v => v)
+    .map(v => `#${v};`)
+    .join(' ');
 
   const startKernel = app.serviceManager.kernels.startNew(
     {
@@ -43,7 +54,7 @@ export const exportPDF = async (
       handleComms: workingKernel.handleComms
     }
   );
-  const renderingKernel = await ['%% render-in-pdf', ...mods].reduce(
+  const renderingKernel = await ['%% render-in-pdf', ...codes].reduce(
     async (acc, code) =>
       acc.then(
         renderingKernel =>
