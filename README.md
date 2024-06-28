@@ -3,7 +3,6 @@
 [![Github Actions Status](https://github.com/kyori19/satysfi-notebook-tweaks/workflows/Build/badge.svg)](https://github.com/kyori19/satysfi-notebook-tweaks/actions/workflows/build.yml)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/kyori19/satysfi-notebook-tweaks/main?urlpath=lab)
 
-
 A small tweaks for SATySFi Notebook environment.
 
 ## Requirements
